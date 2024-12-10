@@ -10,7 +10,7 @@ import "swiper/css/scrollbar";
 
 const slides = [
   {
-    image: "https://via.placeholder.com/1920x900",
+    image: "/assets/images/Sauna-Gallery/sauna-1.jpg",
     title: "Традиционная русская баня",
     description: "Ощутите тепло и расслабление в настоящей парной.",
     buttonText: "Подробнее",
@@ -49,12 +49,18 @@ const Hero = () => {
               alt={slide.title}
               className="absolute w-full h-full object-cover"
             />
-            <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-64">
-              {/* Adjusted px-16 for padding on the left */}
-              <h2 className="text-4xl font-bold text-white">{slide.title}</h2>
-              <p className="mt-4 text-lg text-white">{slide.description}</p>
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+            {/* Content */}
+            <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-4 sm:px-8 md:px-16 lg:px-64">
+              <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-white">
+                {slide.title}
+              </h2>
+              <p className="mt-4 text-sm sm:text-base md:text-lg text-white">
+                {slide.description}
+              </p>
               <button
-                className={`mt-6 px-6 py-3 rounded-full text-white ${slide.buttonColor}`}
+                className={`mt-6 px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-base md:text-lg text-white ${slide.buttonColor}`}
               >
                 {slide.buttonText}
               </button>
