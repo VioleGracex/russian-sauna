@@ -3,12 +3,20 @@
 import React, { useState, useEffect } from "react";
 
 const About = () => {
-  const [showFirstImage, setShowFirstImage] = useState(true);
+  // Initialize an array of images
+  const images = [
+    "https://via.placeholder.com/500x500?text=Image+1",
+    "https://via.placeholder.com/500x500?text=Image+2",
+    "https://via.placeholder.com/500x500?text=Image+3",
+    "https://via.placeholder.com/500x500?text=Image+4"
+  ];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setShowFirstImage((prev) => !prev);
-    }, 8000); // Switch images every 2 seconds
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 8000); // Switch images every 8 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -21,31 +29,25 @@ const About = () => {
     >
       {/* Left Side - Image Cards */}
       <div className="w-1/2 flex justify-center items-center relative">
-        {/* First Image */}
-        <div
-          className={`ml-24 mb-24 w-[500px] h-[500px] rounded-lg overflow-hidden shadow-lg absolute transition-all duration-700 ${
-            showFirstImage ? "z-10" : "z-0 scale-95 translate-x-4"
-          }`}
-        >
-          <img
-            src="https://via.placeholder.com/500x500?text=Image+1"
-            alt="Placeholder Image 1"
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        {/* Second Image */}
-        <div
-          className={ ` mr-24 mt-24 w-[500px] h-[500px] rounded-lg overflow-hidden shadow-lg absolute transition-all duration-700 ${
-            showFirstImage ? "z-0 scale-95 -translate-x-4" : "z-10"
-          }`}
-        >
-          <img
-            src="https://via.placeholder.com/500x500?text=Image+2"
-            alt="Placeholder Image 2"
-            className="w-full h-full object-cover"
-          />
-        </div>
+        {/* Loop through images and display them */}
+        {images.map((image, index) => (
+          <div
+            key={index}
+            className={`w-[500px] h-[500px] rounded-lg overflow-hidden shadow-lg absolute transition-all duration-700 ${
+              index === currentIndex
+                ? "z-10 transform translate-x-0 translate-y-0"
+                : index === (currentIndex - 1 + images.length) % images.length
+                ? "z-0 transform translate-x-4 translate-y-2"
+                : "z-0 transform translate-x-4 translate-y-4"
+            }`}
+          >
+            <img
+              src={image}
+              alt={`Image ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
       </div>
 
       {/* Right Side - Text Content */}
