@@ -16,7 +16,7 @@ const About = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 8000); // Switch images every 8 seconds
+    }, 4000); // Switch images every 8 seconds
     return () => clearInterval(interval);
   }, []);
 

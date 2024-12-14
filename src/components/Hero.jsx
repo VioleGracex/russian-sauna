@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Scrollbar } from "swiper/modules";
+import { Scrollbar, Autoplay } from "swiper/modules";
 
 // Import Swiper styles
 import "swiper/css";
@@ -39,7 +39,11 @@ const Hero = () => {
         scrollbar={{
           hide: true,
         }}
-        modules={[Scrollbar]}
+        autoplay={{
+          delay: 6000, // Rotate every 6 seconds (6000ms)
+          disableOnInteraction: false, // Continue autoplay after interaction
+        }}
+        modules={[Scrollbar, Autoplay]}
         className="w-full h-full"
       >
         {slides.map((slide, index) => (
