@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import AdminHero from "@/components/admin/adminHero";
 import "../app/globals.css";
+
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
@@ -15,6 +16,13 @@ const Admin = () => {
     }
   };
 
+  // Handle the Enter key press
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleLogin(); // Trigger the login function when Enter is pressed
+    }
+  };
+
   return (
     <div className="flex items-center justify-center h-screen bg-gray-200">
       {!isAuthenticated ? (
@@ -25,6 +33,7 @@ const Admin = () => {
             placeholder="Enter Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyPress={handleKeyPress}  // Add onKeyPress event
             className="w-full p-2 border border-gray-300 rounded mb-4"
           />
           <button
@@ -35,7 +44,7 @@ const Admin = () => {
           </button>
         </div>
       ) : (
-        <AdminHero /> 
+        <AdminHero />
       )}
     </div>
   );

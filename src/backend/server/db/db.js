@@ -10,10 +10,14 @@ const pool = new Pool({
 });
 
 // Test the connection
-pool.query('SELECT NOW()', (err, res) => {
-    if (err) {
-        console.error('Error executing query', err.stack);
-    } else {
+const testConnection = async () => {
+    try {
+        const res = await pool.query('SELECT NOW()');
         console.log('Connection successful:', res.rows[0]);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
     }
-});
+};
+
+// Test the connection
+testConnection();

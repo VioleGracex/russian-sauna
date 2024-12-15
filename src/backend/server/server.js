@@ -1,70 +1,63 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-const pool = require('./db/db');
+const { Client } = require("pg");
+const cors = require("cors");
 const app = express();
 const port = 5000;
 
-app.use(bodyParser.json());
+// Define server URL
+const SERVER_URL = process.env.REACT_APP_API_URL;
+
+// Middleware for parsing JSON
+app.use(express.json());
+app.use(cors());
+
+// PostgreSQL connection
+const client = new Client({
+  user: 'postgres',
+  host: 'localhost',
+  database: 'russian-sauna',
+  password: 'szaq12345',
+  port: 5432, // Default PostgreSQL port
+});
+
+// Connect to the database
+client.connect();
 
 // Root route (this will handle the "Cannot GET /" error)
 app.get("/", (req, res) => {
-    res.send("Welcome to the Russian Sauna API!");
+  res.send("Welcome to the Russian Sauna API!");
 });
 
-// Get all slides
+// Create the slides table if it doesn't exist
+const createSlidesTable = async () => {
+  const query = `
+    CREATE TABLE IF NOT EXISTS slides (
+      id SERIAL PRIMARY KEY,
+      image_url VARCHAR(255) NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      button_text VARCHAR(255),
+      button_color VARCHAR(50)
+    );
+  `;
+  await client.query(query);
+};
+
+// Call the createSlidesTable function when the server starts
+createSlidesTable().catch((err) => console.error("Error creating table:", err));
+
+// Route to fetch all slides
 app.get("/api/slides", async (req, res) => {
-    try {
-        const result = await pool.query("SELECT * FROM slides ORDER BY id");
-        res.json(result.rows);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send("Server Error");
-    }
+  try {
+    const result = await client.query("SELECT * FROM slides");
+    res.json(result.rows); // Return the rows as JSON response
+  } catch (error) {
+    console.error("Error fetching slides:", error);
+    res.status(500).send("Error fetching slides");
+  }
 });
 
-// Add a new slide
-app.post("/api/slides", async (req, res) => {
-    const { image_url, title, description, button_text, button_color } = req.body;
-    try {
-        const result = await pool.query(
-            "INSERT INTO slides (image_url, title, description, button_text, button_color) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-            [image_url, title, description, button_text, button_color]
-        );
-        res.json(result.rows[0]);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send("Server Error");
-    }
-});
-
-// Update a slide
-app.put("/api/slides/:id", async (req, res) => {
-    const { id } = req.params;
-    const { image_url, title, description, button_text, button_color } = req.body;
-    try {
-        const result = await pool.query(
-            "UPDATE slides SET image_url = $1, title = $2, description = $3, button_text = $4, button_color = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING *",
-            [image_url, title, description, button_text, button_color, id]
-        );
-        res.json(result.rows[0]);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send("Server Error");
-    }
-});
-
-// Delete a slide
-app.delete("/api/slides/:id", async (req, res) => {
-    const { id } = req.params;
-    try {
-        await pool.query("DELETE FROM slides WHERE id = $1", [id]);
-        res.send("Slide deleted successfully");
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send("Server Error");
-    }
-});
-
+// Start the server
 app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+  console.log(`Server running on ${SERVER_URL}`);
 });
