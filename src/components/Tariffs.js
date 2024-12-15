@@ -34,7 +34,9 @@ const tariffs = [
 
 const Tariffs = () => {
   return (
-    <section className="w-full py-16 px-8 bg-gray-100">
+    <section
+      className="w-full py-16 px-8 bg-gradient-to-b from-[#bea27a] to-[#FFD698]"
+    >
       <div className="flex flex-col md:flex-row">
         
         {tariffs.map((tariff, index) => (
