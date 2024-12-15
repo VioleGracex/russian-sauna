@@ -1,3 +1,5 @@
+require('dotenv').config();  // Load environment variables from .env file
+
 const express = require("express");
 const { Client } = require("pg");
 const cors = require("cors");
@@ -5,7 +7,7 @@ const app = express();
 const port = 5000;
 
 // Define server URL
-const SERVER_URL = process.env.REACT_APP_API_URL;
+const SERVER_URL = process.env.REACT_APP_API_URL || `http://localhost:${port}`;
 
 // Middleware for parsing JSON
 app.use(express.json());

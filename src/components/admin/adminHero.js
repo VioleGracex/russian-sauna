@@ -1,19 +1,23 @@
-"use client";
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { SketchPicker } from 'react-color';
 import { HiColorSwatch } from 'react-icons/hi'; // Color picker icon
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"; // Assuming these are from your UI library
+import { IoIosClose } from 'react-icons/io'; // Delete icon
+import { confirmAlert } from 'react-confirm-alert'; // Correct import for confirmAlert
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import the styles
+
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Scrollbar, Autoplay } from "swiper/modules";
+
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/scrollbar";
 
 const AdminHero = () => {
   const [slides, setSlides] = useState([]);
   const [editingSlide, setEditingSlide] = useState(null);
-  const [showColorPicker, setShowColorPicker] = useState(null); // State to handle the color picker visibility
+  const [showColorPicker, setShowColorPicker] = useState(null);
+  const [showBackgroundPicker, setShowBackgroundPicker] = useState(null);
 
   useEffect(() => {
     const fetchSlides = async () => {
@@ -27,19 +31,32 @@ const AdminHero = () => {
     fetchSlides();
   }, []);
 
-  const handleEdit = (id) => {
-    const slide = slides.find((slide) => slide.id === id);
-    setEditingSlide({ ...slide });  // Clone slide for editing
+  const handleDelete = (id) => {
+    confirmAlert({
+      title: 'Are you sure?',
+      message: `Do you really want to delete slide ${id}?`,
+      buttons: [
+        {
+          label: 'Yes',
+          onClick: async () => {
+            try {
+              await axios.delete(`http://localhost:5000/api/slides/${id}`);
+              setSlides(slides.filter(slide => slide.id !== id));
+            } catch (error) {
+              console.error("Error deleting slide:", error);
+            }
+          }
+        },
+        {
+          label: 'No',
+        }
+      ]
+    });
   };
 
-  const handleSave = async (id) => {
-    try {
-      await axios.put(`http://localhost:5000/api/slides/${id}`, editingSlide);
-      setSlides(slides.map(slide => slide.id === id ? editingSlide : slide));
-      setEditingSlide(null);
-    } catch (error) {
-      console.error("Error saving slide:", error);
-    }
+  const handleEdit = (id) => {
+    const slide = slides.find((slide) => slide.id === id);
+    setEditingSlide({ ...slide });
   };
 
   const handleChange = (e) => {
@@ -57,214 +74,148 @@ const AdminHero = () => {
   };
 
   const toggleColorPicker = (field) => {
-    // Toggle color picker visibility for the respective field only
     setShowColorPicker(showColorPicker === field ? null : field);
+  };
+
+  const toggleBackgroundPicker = () => {
+    setShowBackgroundPicker(!showBackgroundPicker);
   };
 
   return (
     <div className="container mx-auto mt-8">
       <h2 className="text-2xl font-bold mb-6">Admin Panel - Edit Slides</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Accordion type="single" collapsible>
-          {slides.map((slide) => (
-            <AccordionItem key={slide.id} value={slide.id.toString()}>
-              <AccordionTrigger className="flex items-center justify-between">
-                <div className="font-medium text-lg">{slide.title}</div>
-                <div
-                  className="w-24 h-16 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${slide.image_url})` }}
-                ></div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="mb-4">
-                  <h4>{slide.title}</h4>
-                  <p>{slide.description}</p>
-                  <div
-                    style={{
-                      backgroundColor: slide.button_color,
-                      color: slide.text_color,
-                      padding: '10px',
-                    }}
-                  >
-                    {slide.button_text}
-                  </div>
-                </div>
 
-                {/* Form for editing slide */}
-                <form>
-                  <div className="mb-4">
-                    <label className="block font-medium">Title</label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={editingSlide?.title || slide.title}
-                      onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded"
-                    />
-                  </div>
+      {/* Editable Swiper with Inline Editing */}
+      <div className="w-full h-[900px] bg-gray-100 flex justify-center items-center overflow-hidden">
+        {slides.length > 0 ? (
+          <Swiper
+            scrollbar={{ hide: true }}
+            modules={[Scrollbar]}
+            className="w-full h-full"
+          >
+            {slides.map((slide, index) => (
+              <SwiperSlide key={index} className="relative w-full h-full">
+                <img
+                  src={slide.image}
+                  alt={slide.title}
+                  className="absolute w-full h-full object-cover"
+                />
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+                {/* Content */}
+                <div className="absolute inset-0 flex flex-col justify-center items-start text-left px-4 sm:px-8 md:px-16 lg:px-64">
+                  {editingSlide && editingSlide.id === slide.id ? (
+                    <div className="relative w-full">
+                      {/* Editable Title */}
+                      <input
+                        type="text"
+                        name="title"
+                        value={editingSlide.title}
+                        onChange={handleChange}
+                        className="text-2xl font-bold p-2 mb-4 w-full text-white bg-transparent border-b-2 border-white"
+                      />
 
-                  <div className="mb-4">
-                    <label className="block font-medium">Description</label>
-                    <textarea
-                      name="description"
-                      value={editingSlide?.description || slide.description}
-                      onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded"
-                    />
-                  </div>
+                      {/* Editable Description */}
+                      <textarea
+                        name="description"
+                        value={editingSlide.description}
+                        onChange={handleChange}
+                        className="p-2 w-full mb-4 text-white bg-transparent border-b-2 border-white"
+                      />
 
-                  <div className="mb-4">
-                    <label className="block font-medium">Button Text</label>
-                    <input
-                      type="text"
-                      name="button_text"
-                      value={editingSlide?.button_text || slide.button_text}
-                      onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded"
-                    />
-                  </div>
+                      {/* Editable Button Text */}
+                      <input
+                        type="text"
+                        name="button_text"
+                        value={editingSlide.button_text}
+                        onChange={handleChange}
+                        className="p-2 mb-4 w-full text-white bg-transparent border-b-2 border-white"
+                      />
 
-                  {/* Color picker for Text Color */}
-                  <div className="flex items-center mb-4">
-                    <label className="mr-2">Text Color</label>
-                    <button
-                      type="button"
-                      className="p-2 border rounded"
-                      onClick={() => toggleColorPicker('text_color')}
-                    >
-                      <HiColorSwatch className="text-xl text-blue-500" />
-                    </button>
-                    {showColorPicker === 'text_color' && (
-                      <div className="absolute z-50">
-                        <SketchPicker
-                          color={editingSlide?.text_color || slide.text_color}
-                          onChangeComplete={(color) => handleColorChange(color, 'text_color')}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Color picker for Button Color */}
-                  <div className="flex items-center mb-4">
-                    <label className="mr-2">Button Color</label>
-                    <button
-                      type="button"
-                      className="p-2 border rounded"
-                      onClick={() => toggleColorPicker('button_color')}
-                    >
-                      <HiColorSwatch className="text-xl text-blue-500" />
-                    </button>
-                    {showColorPicker === 'button_color' && (
-                      <div className="absolute z-50">
-                        <SketchPicker
-                          color={editingSlide?.button_color || slide.button_color}
-                          onChangeComplete={(color) => handleColorChange(color, 'button_color')}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Conditional rendering for background fields */}
-                  <div className="mb-4">
-                    <label className="block font-medium">Background Type</label>
-                    <div className="flex items-center space-x-4">
-                      <label>
-                        <input
-                          type="radio"
-                          name="background_type"
-                          value="solid"
-                          checked={editingSlide?.background_type === 'solid'}
-                          onChange={handleChange}
-                        />
-                        Solid Background
-                      </label>
-                      <label>
-                        <input
-                          type="radio"
-                          name="background_type"
-                          value="image"
-                          checked={editingSlide?.background_type === 'image'}
-                          onChange={handleChange}
-                        />
-                        Image Background
-                      </label>
-                    </div>
-                  </div>
-
-                  {editingSlide?.background_type === 'solid' && (
-                    <>
-                      <div className="mb-4">
-                        <label className="block font-medium">Solid Background Color</label>
+                      {/* Color Picker for Text */}
+                      <div className="flex items-center justify-end mb-4">
                         <button
                           type="button"
                           className="p-2 border rounded"
-                          onClick={() => toggleColorPicker('background_color')}
+                          onClick={() => toggleColorPicker('text_color')}
                         >
                           <HiColorSwatch className="text-xl text-blue-500" />
                         </button>
-                        {showColorPicker === 'background_color' && (
-                          <div className="absolute z-50">
-                            <SketchPicker
-                              color={editingSlide?.background_color || slide.background_color}
-                              onChangeComplete={(color) => handleColorChange(color, 'background_color')}
-                            />
-                          </div>
+                        {showColorPicker === 'text_color' && (
+                          <SketchPicker
+                            color={editingSlide.text_color}
+                            onChangeComplete={(color) => handleColorChange(color, 'text_color')}
+                          />
                         )}
                       </div>
-                    </>
+
+                      {/* Save Button */}
+                      <button
+                        type="button"
+                        className="p-2 bg-blue-500 text-white rounded mt-4"
+                        onClick={async () => {
+                          try {
+                            await axios.put(`http://localhost:5000/api/slides/${editingSlide.id}`, editingSlide);
+                            setSlides(slides.map(slide => slide.id === editingSlide.id ? editingSlide : slide));
+                            setEditingSlide(null);
+                          } catch (error) {
+                            console.error("Error saving slide:", error);
+                          }
+                        }}
+                      >
+                        Save
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-white">
+                        {slide.title}
+                      </h2>
+                      <p className="mt-4 text-sm sm:text-base md:text-lg text-white">
+                        {slide.description}
+                      </p>
+                      <button
+  className={`mt-6 px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-base md:text-lg text-white ${
+    /^#[0-9A-F]{6}$/i.test(slide.buttonColor) // Check if buttonColor is a hex code
+      ? `bg-[${slide.buttonColor}]` // Apply hex color as a dynamic class
+      : slide.buttonColor === 'blue'
+      ? 'bg-blue-500'
+      : slide.buttonColor === 'green'
+      ? 'bg-green-500'
+      : slide.buttonColor === 'red'
+      ? 'bg-red-500'
+      : 'bg-gray-500' // Default to gray if no valid color
+  }`}
+>
+  {slide.buttonText}
+</button>
+
+
+                    </div>
                   )}
+                </div>
 
-                  {editingSlide?.background_type === 'image' && (
-                    <>
-                      <div className="mb-4">
-                        <label className="block font-medium">Image URL</label>
-                        <input
-                          type="text"
-                          name="image_url"
-                          value={editingSlide?.image_url || slide.image_url}
-                          onChange={handleChange}
-                          className="w-full p-2 border border-gray-300 rounded"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  <div className="mb-4">
-                    <label className="block">
-                      <input
-                        type="checkbox"
-                        name="use_background_image"
-                        checked={editingSlide?.use_background_image || slide.use_background_image}
-                        onChange={handleBooleanChange}
-                      />
-                      Use Background Image
-                    </label>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block">
-                      <input
-                        type="checkbox"
-                        name="use_solid_background"
-                        checked={editingSlide?.use_solid_background || slide.use_solid_background}
-                        onChange={handleBooleanChange}
-                      />
-                      Use Solid Background
-                    </label>
-                  </div>
-
+                {/* Edit and Delete Icons */}
+                <div className="absolute top-2 right-2 space-x-2">
                   <button
-                    type="button"
-                    className="p-2 bg-blue-500 text-white rounded"
-                    onClick={() => handleSave(slide.id)}
+                    onClick={() => handleEdit(slide.id)}
+                    className="p-2 bg-blue-500 text-white rounded-full"
                   >
-                    Save
+                    Edit
                   </button>
-                </form>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+                  <button
+                    onClick={() => handleDelete(slide.id)}
+                    className="p-2 bg-red-500 text-white rounded-full"
+                  >
+                    <IoIosClose />
+                  </button>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        ) : (
+          <div className="text-center text-gray-500">Loading slides...</div>
+        )}
       </div>
     </div>
   );

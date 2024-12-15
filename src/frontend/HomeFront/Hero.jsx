@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Scrollbar, Autoplay } from "swiper/modules";
-import axios from "axios";
+
 
 // Import Swiper styles
 import "swiper/css";
@@ -13,19 +14,19 @@ import "swiper/css/scrollbar";
 const Hero = () => {
   const [slides, setSlides] = useState([]);
 
-  // Fetch slide data from the backend
   useEffect(() => {
     const fetchSlides = async () => {
       try {
-        const response = await axios.get("/api/slides"); // Adjust endpoint as needed
+        const response = await axios.get("http://localhost:5000/api/slides");
+        console.log(response.data); // Log the entire response
         setSlides(response.data);
       } catch (error) {
-       /*  console.error("Error fetching slides:", error); */
+        console.error("Error fetching slides:", error);
       }
     };
-
     fetchSlides();
   }, []);
+  
 
   return (
     <section className="w-full h-[900px] bg-gray-100 flex justify-center items-center overflow-hidden">
@@ -59,10 +60,17 @@ const Hero = () => {
                   {slide.description}
                 </p>
                 <button
-                  className={`mt-6 px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-base md:text-lg text-white ${slide.buttonColor}`}
-                >
-                  {slide.buttonText}
-                </button>
+  className="mt-6 px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-base md:text-lg text-white hover:bg-opacity-80 transition-all duration-300"
+  style={{
+    backgroundColor: /^#[0-9A-Fa-f]{6}$/i.test(slide.buttonColor) ? slide.buttonColor : '#FF5733',
+  }}
+>
+  {slide.button_text}
+</button>
+
+
+
+
               </div>
             </SwiperSlide>
           ))}
