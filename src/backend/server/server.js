@@ -1,10 +1,15 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const pool = require("./db");
+const pool = require('./db/db');
 const app = express();
 const port = 5000;
 
 app.use(bodyParser.json());
+
+// Root route (this will handle the "Cannot GET /" error)
+app.get("/", (req, res) => {
+    res.send("Welcome to the Russian Sauna API!");
+});
 
 // Get all slides
 app.get("/api/slides", async (req, res) => {
