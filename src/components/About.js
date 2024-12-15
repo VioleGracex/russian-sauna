@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 
 const About = () => {
-  // Initialize an array of images
   const images = [
     "https://via.placeholder.com/500x500?text=Image+1",
     "https://via.placeholder.com/500x500?text=Image+2",
@@ -18,7 +18,7 @@ const About = () => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
     }, 4000); // Switch images every 4 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [images.length]); // Added images.length to the dependency array
 
   return (
     <section
@@ -27,8 +27,6 @@ const About = () => {
         background: "linear-gradient(135deg, #FFD698, #5A4E3D)",
       }}
     >
-      
-
       {/* Right Side - Text Content */}
       <div className="w-auto md:w-1/2 max-w-lg justify-items-center text-center ml-4">
         <h2 className="text-2xl md:text-4xl font-bold text-[#AA3708] mb-4">
@@ -57,6 +55,7 @@ const About = () => {
               src={image}
               alt={`Image ${index + 1}`}
               className="w-full h-full object-cover"
+              
             />
           </div>
         ))}

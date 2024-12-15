@@ -1,27 +1,29 @@
-import { Header } from '../components/Header';
-import Hero from '@/components/Hero';
-import Services from '../components/Services';
-import Testimonials from '../components/Testimonials';
-import ContactForm from '../components/ContactForm';
-import Footer from '../components/Footer';
-import About from '@/components/About';
-import Advantages from '@/components/Advantages';
-import Tariffs from '@/components/Tariffs';
-import Address from '@/components/Address';
+"use client";
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ScrollToSection from "@/components/Actions/ScrollTosection";
+import Admin from "@/pages/admin";
+import Home from "@/pages/home";
 
-export default function Home() {
+export default function App() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    // This ensures that the Router runs only on the client side
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null; // or a loading spinner
+  }
+
   return (
-    <div>
-      <Header />
-      <Hero />
-      <About/>
-      <Advantages/>
-      <Tariffs/>
-      <Services />
-      <Testimonials />
-      <ContactForm />
-      <Address/>
-      <Footer />
-    </div>
+    <Router>
+      <ScrollToSection />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/admin" element={<Admin />} />
+      </Routes>
+    </Router>
   );
 }
